@@ -32,12 +32,13 @@ class MysqlTwistedPiplines(object):
     def process_item(self, item, spider):
         #使用twisted将mysql插入股变成异步执行
         query = self.dbpool.runInteraction(self.do_insert,item)
-        query.addErrback(self.handle_error,item,spider)#处理异常
+        #处理异常
+        query.addErrback(self.handle_error,item,spider)
         return item
 
     def handle_error(self, failure,item,spider):
-        #处理异步插入的异常
-        # 处理mysql断线从链
+        # 处理异步插入的异常
+        # 处理mysql断线重连
         if failure.value.args[1] == 'MySQL server has gone away':
             try:
                 dbparms = dict(
